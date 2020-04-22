@@ -1,15 +1,13 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
-
+#!/usr/bin/env python3
+# -*- conding: utf-8 -*-
  
-from sklearn.datasets.samples_generator import make_blobs
-from sklearn.cluster import KMeans
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from mpi4py import MPI
 from numpy.random import randint
 import time
+import logging
 from math import sqrt
 from collections import defaultdict
 from sklearn.datasets import load_iris
@@ -20,6 +18,7 @@ size= Comm.Get_size()
 data_type = int # our data type is integer for this example
 root = 0
 K = 5
+seed = 12
 #loading the Iris data
 Hasmap  =  {'Iris-versicolor':0,'Iris-setosa':1,'Iris-virginica':2}
 def scatter_plot(Data,cent, K_component,dim=2, ):
@@ -71,7 +70,7 @@ def mean_(x):
 
 
 def cent_init(A, K):
-
+    np.random.seed(seed=seed)
     cent_list = defaultdict()
     index = np.random.choice(A.shape[0],K, replace=False)
     for num, k in enumerate(index):
@@ -130,13 +129,20 @@ def test_equal(cent1,cent2):
          sum_to +=su
      return sum_to
 
+
+#################### Now We start #################################
+##################LOADING AND SPLITING THE DATA AMONG WORKERS##################
+logging.basicConfig(filename='time_log.log', level=logging.DEBUG)
+logger = logging.getLogger()
+
 if rank == root:
+    debut = time.time()
     data = load_iris()
     # X,y = data.data , data.target
-    X, y = make_blobs(n_samples=3000, centers=5, cluster_std=0.60, random_state=0)
+    X, y = make_blobs(n_samples=30000, centers=5, cluster_std=0.60, random_state=0)
     np.random.shuffle(X)
     init_cent = cent_init(X,K)
-    print(f"root{rank}--init_centroid{init_cent}")
+    print(f"initial - centroid: {init_cent}")
     # print(init_cent)
     data = np.array_split(X, size)
 else:
@@ -145,10 +151,14 @@ else:
 cents = Comm.bcast(init_cent,root=0)
 data = Comm.scatter(data, root=0)
 converge = Comm.bcast(True, root=0)
-
+end = time.time()
+if rank==root:
+    logger.info(f"time rquiret to send data = {end - debut}")
 total_distortion = []
 t =0
+start = time.time()
 while converge:
+
     cent_to = cents.copy()
     final_groupe , J_clust = k_mean(data,cents)
     cent_new    = comput_centroid(data,final_groupe,cents)
@@ -170,7 +180,8 @@ while converge:
     cents = global_cent.copy()
     init_groupe = final_groupe.copy()
     t += 1
-
+finish = time.time()
+logger.info(f"rank{rank} took {finish- start}")
 if rank==root:
     plot_cent,J_clust = k_mean(X,global_cent)
     scatter_plot(X,global_cent,plot_cent)
