@@ -10,7 +10,7 @@ import time
 import logging
 from math import sqrt
 from collections import defaultdict
-from sklearn.datasets import load_iris
+from sklearn.datasets import load_iris, make_blobs
 from IPython.core.debugger import set_trace
 Comm = MPI.COMM_WORLD
 rank = Comm.Get_rank()
