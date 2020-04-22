@@ -1,14 +1,9 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
+ 
 from sklearn.datasets.samples_generator import make_blobs
 from sklearn.cluster import KMeans
-
-
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,7 +14,6 @@ from math import sqrt
 from collections import defaultdict
 from sklearn.datasets import load_iris
 from IPython.core.debugger import set_trace
-import matplotlib.pyplot as plt
 Comm = MPI.COMM_WORLD
 rank = Comm.Get_rank()
 size= Comm.Get_size()
@@ -79,27 +73,9 @@ def mean_(x):
 def cent_init(A, K):
 
     cent_list = defaultdict()
-
     index = np.random.choice(A.shape[0],K, replace=False)
     for num, k in enumerate(index):
         cent_list[num] = A[k]
-    # index = np.arange(A.shape[0])
-    # cent1 = np.random.choice(index)
-    # cents = [cent1]
-    # cent_list[K-1]= A[cent1]
-    # while (K-len(cents))>0:
-    #     max_indece = None
-    #     max_dis = 0
-    #     for ind, el in enumerate(A):
-    #         dist = 0
-    #         if ind not in cents:
-    #             for cent in cents:
-    #                 dist = dist + sq_eucl_dist(A[cent],el)
-    #         if dist > max_dis:
-    #             max_indece = ind
-    #             max_dis = dist
-    #     cents.append(max_indece)
-    #     cent_list[K-len(cents)]= A[max_indece]
     return cent_list
 
 
@@ -198,76 +174,4 @@ while converge:
 if rank==root:
     plot_cent,J_clust = k_mean(X,global_cent)
     scatter_plot(X,global_cent,plot_cent)
-#!/usr/bin/env python
-# from mpi4py import MPI
-# import numpy
-# comm = MPI.Comm.Get_parent()
-# size = comm.Get_size()
-# rank = comm.Get_rank()
-# print("size",size)
-# N = numpy.array(0, dtype='i')
-# comm.Bcast([N, MPI.INT], root=0)
-# print(N)
-# h = 1.0 / N; s = 0.0
-# print("rank--",rank)
-# for i in range(rank, N, size):
-#     x = h * (i + 0.5)
-#     s += 4.0 / (1.0 + x**2)
-# PI = numpy.array(s * h, dtype='d')
-# comm.Reduce([PI, MPI.DOUBLE], None, op=MPI.SUM, root=0)
-#
-# comm.Disconnect()
-
-
-# from mpi4py.futures import MPIPoolExecutor
-# x0, x1, w = -2.0, +2.0, 640*2
-# y0, y1, h = -1.5, +1.5, 480*2
-# dx = (x1 - x0) / w
-# dy = (y1 - y0) / h
-# c = complex(0, 0.65)
-# def julia(x, y):
-#     z = complex(x, y)
-#     n = 255
-#     while abs(z) < 3 and n > 1:
-#         z = z**2 + c
-#         n -= 1
-#     return n
-# def julia_line(k):
-#     line = bytearray(w)
-#     y = y1 - k * dy
-#     for j in range(w):
-#         x = x0 + j * dx
-#         line[j] = julia(x, y)
-#     return line
-#
-# if __name__ == '__main__':
-#     with MPIPoolExecutor() as executor:
-#         image = executor.map(julia_line, range(h))
-#         with open('julia.pgm', 'wb') as f:
-#             f.write(b'P5 %d %d %d\n' % (w, h, 255))
-#             for line in image:
-#                 f.write(line)
-
-
-
-# from sklearn.datasets import load_iris
-# import numpy as np
-# from scipy.cluster.vq import kmeans, whiten
-# from operator import itemgetter
-# from math import ceil
-# from mpi4py import MPI
-# comm = MPI.COMM_WORLD
-# rank = comm.Get_rank(); size = comm.Get_size()
-# np.random.seed(seed=rank) # XXX should use parallel RNG
-# # obs = whiten(np.genfromtxt(’data.csv’, dtype=float, delimiter=’,’))
-# data = load_iris()
-# obs  = data.data
-# K = 3; nstart = 1000
-# n = int(ceil(float(nstart) / size))
-# centroids, distortion = kmeans(obs, K, n)
-# results = comm.gather((centroids, distortion), root=0)
-# if rank == 0:
-#     results.sort(key=itemgetter(1))
-#     result = results[0]
-#     print('Best distortion for %d tries: %f'% (nstart, result[1]))
-#     print("result", results)
+ 
